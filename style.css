@@ -1,0 +1,57 @@
+/* connection indicator */
+#conn-status {
+    height: 20px;
+    width: 20px;
+    background-color: orange;
+    display: inline-block;
+}
+
+#conn-status.up {
+    background-color: green;
+}
+
+#conn-status.down {
+    background-color: red;
+}
+
+/* stream indicator */
+#stream-status {
+    height: 20px;
+    width: 20px;
+    background-color: red;
+    display: inline-block;
+}
+
+#stream-status.up {
+    background-color: green;
+}
+
+/* streaming container */
+#chart-container {
+    height: 700px;
+    border: solid 1px #ccc;
+    overflow-y: scroll;
+}
+
+/* streaming controls */
+
+/* stats */
+span.count {
+    display: inline-block;
+    width: 80px;
+}
+
+span.min {
+    display: inline-block;
+    width: 80px;
+}
+
+span.average {
+    display: inline-block;
+    width: 80px;
+}
+
+span.max {
+    display: inline-block;
+    width: 80px;
+}

@@ -1,0 +1,45 @@
+Field,Field Name,Description
+record_id,Record ID ,"Unique ID for this record. Each record represents a unique combination of Vehicle ID, Plate ID, mileage estimate, and address (not shown). "
+vin_id,Vehicle ID,Randomly assigned unique integer that replaces the actual 17-character Vehicle Identification Number (VIN) for an individual vehicle. 
+plate_id,Plate ID,"Randomly assigned unique integer that replaces the actual alphanumeric Registration ID (License Plate); because plates can be transferred from one vehicle to another, this ID may be associated with multiple Vehicle IDs. "
+owner_type,Owner Type,1: Noncommercial Passenger Vehicles; 2: Commercial Vehicles
+start_odom,Start Odometer,Odometer reading from the inspection at the beginning of the mileage estimate
+start_date,Start date,Start date for this registration and estimates record
+end_date,End Date,End date for this registration and estimates record
+insp_match,Inspection Match,"Indicates if there is a mileage estimate for this vehicle at this period. Mileage estimates are based on odometer readings taken during vehicle safety inspections, conducted annually and upon transfer of title. The odometer readings of successive inspections were compared to estimate miles driven during the intervening period. "
+ovrlp_days,Record Length,Number of days in this record
+daysbtnins,Mileage Estimate Days,Number of days between the two inspections that constitute the beginning and end of the mileage estimate period. 
+ovrlp_pct,Percent Overlap,The length of this record as a percent of the mileage estimate period. Indicates how much of the mileage estimate period was spent with this owner at this location. A measure of estimate reliability.  
+mi_per_day,Miles per Day,Estimated daily mileage for this vehicle during this period. 
+muni_id,Municipal ID,"Numeric ID number (DOR ID) for municipality where vehicle is garaged.  A value of zero indicates the vehicle is garaged out of state or the garage location of the vehicle is supressed. Vehicle locaiton information is suppressed if there is a small number of vehicles of a certain make, model, and year in a given zip code.  "
+veh_zip,Zip Code,"Zip code where vehicle is garaged.  A value of zero indicates the garage location of the vehicle is supressed. Vehicle locaiton information is suppressed if there is a small number of vehicles of a certain make, model, and year in a given zip code.  "
+insp_year,Mileage Estimate Year,Calendar year containing the end date of the mileage estimate (latter inspection.) 
+model_year,Vehicle Model,Vehicle Model Year as reported by a commercial vehicle information database. 
+make,Vehicle Make,Vehicle make as reported by a commercial vehicle information database. 
+model,Vehicle Model,Vehicle Model as reported by a commercial vehicle information database. 
+veh_type,Vehicle Type,"Type of Vehicle: Car, Truck, SUV, Wagon, Van, Other "
+mcycle,Motorcycle,Flag for motorcycles; 1= yes 
+hybrid,Hybrid ,Flag for hybrid electric vehicles; 1 = yes
+curbwt,Curb Weight,Total weight of vehicle with standard equipment and no passengers. 
+msrp,MSRP,"Manufacturers Suggested Retail Price, as reported by a commercial vehicle information database.  "
+mpg2008,Fuel Economy,"Average (city/highway) fuel economy from 2008 EPA Ratings, as reported by a commercial vehicle information database and Yale University research"
+fuel,Fuel Type,"Type of fuel consumed: Gasoline, Diesel, Flexfuel,Elect, Other.  "
+mpg_adj,Adjusted MPG,Fuel economy rating adjusted to account for deterioration of efficiency over time and usage. Fuel economy rating is reduced according to a formula that includes vehicle age and mileage.  
+gal_per day,Daily Fuel Use,"Estimated average daily fuel consumption, based on Miles per Day and Adjusted MPG"
+co2eqv_day,co2eqv_day,"Greenhouse gas emissions, in kilograms of CO2 equivalents, per day. "
+q1_2008,  q1_2009,Indicates if this record is valid on the median day of the first calendar quarter of 2008. 
+q2_2008,  q2_2009,Indicates if this record is valid on the median day of the second calendar quarter of 2008. 
+q3_2008,  q3_2009,Indicates if this record is valid on the median day of the third calendar quarter of 2008. 
+q4_2008,  q4_2009,Indicates if this record is valid on the median day of the fourth calendar quarter of 2008. 
+q1_2009,  q1_2009,Indicates if this record is valid on the median day of the first calendar quarter of 2009. 
+q2_2009,  q2_2009,Indicates if this record is valid on the median day of the second calendar quarter of 2009. 
+q3_2009,  q3_2009,Indicates if this record is valid on the median day of the third calendar quarter of 2009. 
+q4_2009,  q4_2009,Indicates if this record is valid on the median day of the fourth calendar quarter of 2009. 
+q1_2010,  q1_2010,Indicates if this record is valid on the median day of the first calendar quarter of 2010. 
+q2_2010,  q2_2010,Indicates if this record is valid on the median day of the second calendar quarter of 2010. 
+q3_2010,  q3_2010,Indicates if this record is valid on the median day of the third calendar quarter of 2010. 
+q4_2010,  q4_2010,Indicates if this record is valid on the median day of the fourth calendar quarter of 2010. 
+q1_2011,  q1_2011,Indicates if this record is valid on the median day of the first calendar quarter of 2011. 
+q2_2011,  q2_2011,Indicates if this record is valid on the median day of the second calendar quarter of 2011. 
+q3_2011,  q3_2011,Indicates if this record is valid on the median day of the third calendar quarter of 2011. 
+q4_2011,  q4_2011,Indicates if this record is valid on the median day of the fourth calendar quarter of 2011. 
