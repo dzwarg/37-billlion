@@ -1,4 +1,3 @@
-37-billlion
-===========
+### 37 Billion Mile Challenge
 
-Fooling around with 37 billion miles of data
+Experiments with streaming node.js, socket.io, and d3.
