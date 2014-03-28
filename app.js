@@ -3,12 +3,20 @@ var fs = require('fs'),
     socketio = require('socket.io');
  
 var server = http.createServer(function(req, res) {
-    res.writeHead(200, { 'Content-type': 'text/html'});
-    if (req.url == '/page.js') {
-        res.end(fs.readFileSync(__dirname + '/page.js'));
-    } else if (req.url == '/style.css') {
-        res.end(fs.readFileSync(__dirname + '/style.css'));
+    if (req.url == '/static/page.js') {
+        res.writeHead(200, { 'Content-type': 'application/json'});
+        res.end(fs.readFileSync(__dirname + '/static/page.js'));
+    } else if (req.url == '/static/jquery-1.7.2.min.js') {
+        res.writeHead(200, { 'Content-type': 'application/json'});
+        res.end(fs.readFileSync(__dirname + '/static/jquery-1.7.2.min.js'));
+    } else if (req.url == '/static/d3.v3.min.js') {
+        res.writeHead(200, { 'Content-type': 'application/json'});
+        res.end(fs.readFileSync(__dirname + '/static/d3.v3.min.js'));
+    } else if (req.url == '/static/style.css') {
+        res.writeHead(200, { 'Content-type': 'text/css'});
+        res.end(fs.readFileSync(__dirname + '/static/style.css'));
     } else {
+        res.writeHead(200, { 'Content-type': 'text/html'});
         res.end(fs.readFileSync(__dirname + '/index.html'));
     }
 }).listen(8080, function() {
@@ -58,9 +66,11 @@ var io = socketio.listen(server).on('connection', function (socket) {
     });
 
     socket.on('stop', function () {
-        streaming.pause();
-        streaming.close();
-        streaming = null;
+        if (streaming) {
+            streaming.pause();
+            streaming.close();
+            streaming = null;
+        }
     });
 
     socket.on('ack', function () {
