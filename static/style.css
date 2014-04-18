@@ -33,6 +33,11 @@
     overflow-y: scroll;
 }
 
+#chart canvas {
+    height: 1px;
+    display: block;
+}
+
 /* streaming controls */
 
 /* stats */

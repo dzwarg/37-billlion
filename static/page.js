@@ -46,9 +46,25 @@ var render = function (elem, data) {
     update
         .attr("transform", function(d) { return "translate(" + x(data.sum/data.count) + ",0)"; });
 
-    // update.select('rect')
-    //     .attr("width", x(d3data[0].dx) - 1)
-    //     .attr("height", function(d) { return height - y(d.y); });
+    var canvas = document.createElement("canvas");
+    canvas.height = 1;
+    canvas.width = data.values.length;
+    elem[0].appendChild(canvas);
+
+    var scale = 255 / (data.max - data.min),
+        ctx = canvas.getContext('2d'),
+        imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+    for (var i = 0; i < data.values.length; i++) {
+        imageData.data[i * 4 + 0] = ((data.values[i] - data.min) * scale).toFixed(0);
+        imageData.data[i * 4 + 1] = ((data.values[i] - data.min) * scale).toFixed(0);
+        imageData.data[i * 4 + 2] = ((data.values[i] - data.min) * scale).toFixed(0);
+        imageData.data[i * 4 + 3] = 255;
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+
+    data.values = [];
 };
 
 $(function(){
@@ -98,7 +114,8 @@ $(function(){
                             min: Number.POSITIVE_INFINITY,
                             max: Number.NEGATIVE_INFINITY,
                             count: 0,
-                            sum: 0
+                            sum: 0,
+                            values: []
                         }
 
                         // add a new div in the markup
@@ -130,6 +147,7 @@ $(function(){
                             sumitem.max = val > sumitem.max ? val : sumitem.max;
                             sumitem.count = sumitem.count + 1;
                             sumitem.sum = sumitem.sum + val;
+                            sumitem.values.push(val);
                         }
                     }
                 }
