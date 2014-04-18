@@ -24,62 +24,84 @@ var server = http.createServer(function(req, res) {
 });
  
 var io = socketio.listen(server).on('connection', function (socket) {
-    var streaming = null,
-        tail = null;
+    // console.log('new connection from <' + socket.id + '>');
 
-    socket.on('get stream state', function (fn) {
-        fn(streaming != null);
-    });
-
-    socket.on('start', function () {
-        console.log('starting stream');
-
+    var socketStart = function (cursor) {
         var bufferStart,
-            tail = '',
             data,
             i,
             row;
 
-        streaming = fs.createReadStream('data/MassVehicleCensusData_20130313/rae_public_noheader.csv');
-        streaming.on('data', function(buffer) {
+        socket.cursor = cursor;
+
+        // console.log('opening stream for <' + socket.id + '>: ' + cursor);
+
+        socket.stream = fs.createReadStream('data/MassVehicleCensusData_20130313/rae_public_noheader.csv', {start: cursor});
+        socket.stream.on('data', function(buffer) {
+            // console.log('cursor was ' + socket.cursor);
+            socket.cursor += buffer.length;
+
             bufferStart = 0;
             data = [];
 
             for (i = 0; i < buffer.length; i++) {
                 if (buffer[i] == 10) { // newline
-                    row = tail + buffer.toString('utf8', bufferStart, i-1).split(',');
+                    row = socket.tail + buffer.toString('utf8', bufferStart, i-1).split(',');
                     data.push(row);
-                    bufferStart = i+1;
-                    tail = '';
+                    bufferStart = i + 1;
+                    socket.tail = '';
                 }
             }
 
             if (bufferStart < buffer.length) {
-                tail = buffer.toString('utf8', bufferStart, buffer.length);
+                socket.tail = buffer.toString('utf8', bufferStart, buffer.length);
+                socket.cursor -= buffer.length - bufferStart;
             }
 
-            socket.emit('data', data);
+            // console.log('cursor is now ' + socket.cursor);
+            socket.emit('data', data, socket.cursor);
 
             // pause stream until ACK
-            streaming.pause();
+            socket.stream.pause();
         });
+    },
+        socketStop = function () {
+            // console.log('disconnecting socket <' + socket.id + '>');
+            if (socket.stream) {
+                socket.stream.pause();
+                socket.stream.close();
+                socket.stream = null;
+            }
+        };
+
+    socket.stream = null;
+    socket.tail = '';
+    socket.cursor = 0;
+
+    socket.on('get stream state', function (fn) {
+        fn(socket.stream != null);
     });
 
-    socket.on('stop', function () {
-        if (streaming) {
-            streaming.pause();
-            streaming.close();
-            streaming = null;
-        }
-    });
+    socket.on('start', socketStart);
+    socket.on('stop', socketStop);
+    socket.on('disconnect', socketStop);
 
-    socket.on('ack', function () {
-        if (streaming) {
-            streaming.resume();
+    socket.on('ack', function (cursor) {
+        if (socket.stream) {
+            // console.log('stream exists');
+            // console.log('socket cursor is: ' + socket.cursor);
+            // console.log('requested cursor: ' + cursor);
+            if (socket.cursor == cursor) {
+                socket.stream.resume();
+            } else {
+                // console.log('starting new socket');
+                socketStart(cursor);
+            }
         }
     });
 });
 
 io.configure(function () {
-    io.set('log level', 0);
+    io.set('log level', 1);
+    io.set('connect timeout', 3000);
 });

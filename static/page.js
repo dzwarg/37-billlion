@@ -52,12 +52,16 @@ var render = function (elem, data) {
 };
 
 $(function(){
-    var iosocket = io.connect(),
-        status = $('#conn-status'),
+    var state = {},
+        $status = $('#conn-status'),
         streamState = function (x) {
             $('#stream-status').toggleClass('up', x);
         },
-        chart = $('#chart'),
+        $chart = $('#chart'),
+        $connect = $('#connect'),
+        $start = $('#start'),
+        $stop = $('#stop'),
+        $cursor = $('#cursor'),
         summary = {},
         filters = {
             '12': 'Miles per Day',
@@ -65,12 +69,15 @@ $(function(){
             '24': 'Fuel Economy',
             '27': 'Daily Fuel Use',
             '28': 'co2eqv_day'
-        };
+        },
+        socketData = function (rows, cursor) {
+            if ($cursor.text() == cursor) {
+                // duplicate attachments? does .of do nothing?
+                return;
+            }
 
-    iosocket.on('connect', function () {
-        status.toggleClass('up');
+            $cursor.text(cursor);
 
-        iosocket.on('data', function (rows) {
             var i, j = 0, fields, val, sumitem;
 
             // check the number of items in 'summary'
@@ -95,7 +102,7 @@ $(function(){
                         }
 
                         // add a new div in the markup
-                        sumitem = $('<div/>').appendTo(chart);
+                        sumitem = $('<div/>').appendTo($chart);
                         sumitem.append('<span class="count"/>');
                         sumitem.append('<span class="min"/>');
                         sumitem.append('<span class="average"/>');
@@ -131,7 +138,7 @@ $(function(){
             j = 1;
             for (i in summary) {
                 if (summary.hasOwnProperty(i)) {
-                    sumitem = chart.find('div:nth-child(' + j + ')');
+                    sumitem = $chart.find('div:nth-child(' + j + ')');
 
                     render(sumitem, summary[i]);
 
@@ -139,25 +146,55 @@ $(function(){
                 }
             }
 
-            iosocket.emit('ack');
-        });
+            state.iosocket.emit('ack', cursor);
+        },
+        socketConnect = function () {
+            $connect.attr('disabled', true);
+            $start.attr('disabled', false);
 
-        iosocket.on('disconnect', function() {
-            status.toggleClass('up')
-                .toggleClass('down');
-        });
+            $status.removeClass().addClass('up');
+        },
+        socketDisconnect = function() {
+            $connect.attr('disabled', false);
+            $start.attr('disabled', true);
+            $stop.attr('disabled', true);
+
+            $status.removeClass().addClass('down');
+        },
+        doConnect = function () {
+            $connect.attr('disabled', true);
+            state.iosocket = io.connect();
+        };
+
+    doConnect();
+
+    state.iosocket.on('connect', socketConnect);
+    state.iosocket.on('disconnect', socketDisconnect);
+    state.iosocket.on('data', socketData);
+
+    $connect.on('click', doConnect);
+
+    $start.on('click', function () {
+        $start.attr('disabled', true);
+        $stop.attr('disabled', false);
+
+        // console.log('emitting a start event with cursor <' + $cursor.text() + '>');
+        state.iosocket.emit('start', parseInt($cursor.text(),10));
+
+        state.iosocket.emit('get stream state', streamState);
     });
 
-    $('#start').on('click', function () {
-        iosocket.emit('start');
+    $stop.on('click', function () {
+        $stop.attr('disabled', true);
+        $start.attr('disabled', false);
 
-        iosocket.emit('get stream state', streamState);
+        state.iosocket.emit('stop');
+
+        state.iosocket.emit('get stream state', streamState);
     });
 
-    $('#stop').on('click', function () {
-        iosocket.emit('stop');
-
-        iosocket.emit('get stream state', streamState);
+    state.iosocket.on('error', function (msg) {
+        console.error('asplode! ' + msg)
     });
 
 });

@@ -8,9 +8,10 @@
 </head>
 <body>
     <div>
+        <input id="connect" type="button" value="Connect" />
         Connection: <span id="conn-status"></span>
-        <input id="start" type="button" value="Start" />
-        <input id="stop" type="button" value="Stop" />
+        <input id="start" type="button" value="Start" disabled="disabled" />
+        <input id="stop" type="button" value="Stop" disabled="disabled" />
         Stream: <span id="stream-status"></span>
     </div>
 
@@ -18,5 +19,7 @@
         <div id="chart">
         </div>
     </div>
+
+    <div id="cursor">0</div>
 </body>
 </html>
