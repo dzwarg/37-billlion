@@ -38,6 +38,19 @@
     display: block;
 }
 
+#chart .visual {
+    position: relative;
+    height: 50px;
+}
+
+#chart svg {
+    position: absolute;    
+}
+
+#chart svg .bar {
+    fill: red;
+}
+
 /* streaming controls */
 
 /* stats */

@@ -3,7 +3,7 @@ var margin = {top: 0, right: 0, bottom: 0, left: 0},
     height = 50 - margin.top - margin.bottom;
 
 var createCanvas = function (elem) {
-    var svg = d3.select(elem[0]).append("svg")
+    var svg = d3.select(elem[0]).select('.visual').append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
       .append("g")
@@ -11,10 +11,12 @@ var createCanvas = function (elem) {
 };
 
 var render = function (elem, data) {
+    var mean = data.sum / data.count;
     elem.find('span.count').text(data.count);
-    elem.find('span.average').text((data.sum / data.count).toFixed(2));
+    elem.find('span.average').text(mean.toFixed(2));
     elem.find('span.min').text(data.min);
-    elem.find('span.max').text(data.max);
+    elem.find('span.max').text(data.max);   
+    elem.find('span.stddev').text(Math.sqrt(data.sum * data.sum / data.count - mean * mean).toFixed(2));
 
     // A formatter for counts.
     var formatCount = d3.format(",.0f");
@@ -49,7 +51,13 @@ var render = function (elem, data) {
     var canvas = document.createElement("canvas");
     canvas.height = 1;
     canvas.width = data.values.length;
-    elem[0].appendChild(canvas);
+    elem[0].querySelector('.visual').appendChild(canvas);
+
+    // clamp this to 50 items
+    if (elem[0].querySelectorAll('canvas').length > 50) {
+        // remove the first canvas
+        elem[0].querySelector('canvas').remove();
+    }
 
     var scale = 255 / (data.max - data.min),
         ctx = canvas.getContext('2d'),
@@ -120,11 +128,14 @@ $(function(){
 
                         // add a new div in the markup
                         sumitem = $('<div/>').appendTo($chart);
-                        sumitem.append('<span class="count"/>');
-                        sumitem.append('<span class="min"/>');
-                        sumitem.append('<span class="average"/>');
-                        sumitem.append('<span class="max"/>');
-                        sumitem.append('<span class="name">' + filters[i] + '</span>');
+                        sumitem2 = $('<div/>').appendTo(sumitem);
+                        sumitem2.append('<span class="count"/>');
+                        sumitem2.append('<span class="min"/>');
+                        sumitem2.append('<span class="max"/>');
+                        sumitem2.append('<span class="average"/>');
+                        sumitem2.append('<span class="stddev"/>');
+                        sumitem2.append('<span class="name">' + filters[i] + '</span>');
+                        sumitem.append('<div class="visual"/>');
 
                         createCanvas(sumitem);
                     }
