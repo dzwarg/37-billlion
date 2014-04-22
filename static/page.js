@@ -1,6 +1,6 @@
 var margin = {top: 0, right: 0, bottom: 0, left: 0},
     width = 500 - margin.left - margin.right,
-    height = 50 - margin.top - margin.bottom;
+    height;
 
 var createCanvas = function (elem) {
     var svg = d3.select(elem[0]).select('.visual').append("svg")
@@ -11,12 +11,13 @@ var createCanvas = function (elem) {
 };
 
 var render = function (elem, data) {
-    var mean = data.sum / data.count;
+    var mean = data.sum / data.count,
+        stddev = Math.sqrt(data.sum_2 / data.count - mean * mean);
     elem.find('span.count').text(data.count);
     elem.find('span.average').text(mean.toFixed(2));
     elem.find('span.min').text(data.min);
-    elem.find('span.max').text(data.max);   
-    elem.find('span.stddev').text(Math.sqrt(data.sum * data.sum / data.count - mean * mean).toFixed(2));
+    elem.find('span.max').text(data.max);
+    elem.find('span.stddev').text(stddev.toFixed(2));
 
     // A formatter for counts.
     var formatCount = d3.format(",.0f");
@@ -28,6 +29,11 @@ var render = function (elem, data) {
     var y = d3.scale.linear()
         .domain([0, 1])
         .range([height, 0]);
+
+    var color = d3.scale.linear()
+        .domain([mean - 2 * stddev, mean - stddev, mean, mean + stddev, mean + 2 * stddev])
+        .range(['blue', 'purple', 'red', 'yellow', 'white'])
+        .clamp(true);
 
     var svg = d3.select(elem[0]).select('svg');
 
@@ -53,26 +59,33 @@ var render = function (elem, data) {
     canvas.width = data.values.length;
     elem[0].querySelector('.visual').appendChild(canvas);
 
-    // clamp this to 50 items
-    if (elem[0].querySelectorAll('canvas').length > 50) {
+    // clamp this to (height (in px)) items
+    if (elem[0].querySelectorAll('canvas').length >= height) {
         // remove the first canvas
         elem[0].querySelector('canvas').remove();
     }
 
-    var scale = 255 / (data.max - data.min),
-        ctx = canvas.getContext('2d'),
-        imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var ctx = canvas.getContext('2d'),
+        imageData = ctx.getImageData(0, 0, canvas.width, canvas.height),
+        c;
+
+    data.values.sort(function(a, b) {
+        return a > b;
+    });
 
     for (var i = 0; i < data.values.length; i++) {
-        imageData.data[i * 4 + 0] = ((data.values[i] - data.min) * scale).toFixed(0);
-        imageData.data[i * 4 + 1] = ((data.values[i] - data.min) * scale).toFixed(0);
-        imageData.data[i * 4 + 2] = ((data.values[i] - data.min) * scale).toFixed(0);
+
+        c = d3.rgb(color(data.values[i]));
+        imageData.data[i * 4 + 0] = c.r;
+        imageData.data[i * 4 + 1] = c.g;
+        imageData.data[i * 4 + 2] = c.b;
         imageData.data[i * 4 + 3] = 255;
     }
 
     ctx.putImageData(imageData, 0, 0);
 
     data.values = [];
+    data.limit = true;
 };
 
 $(function(){
@@ -93,6 +106,16 @@ $(function(){
             '24': 'Fuel Economy',
             '27': 'Daily Fuel Use',
             '28': 'co2eqv_day'
+        },
+        limit = function (sumitem, val) {
+            if (!sumitem.limit) {
+                return false;
+            }
+
+            var mean = sumitem.sum / sumitem.count,
+                stddev = Math.sqrt(sumitem.sum_2 / sumitem.count - mean * mean);
+            
+            return val < (mean - 5 * stddev) || val > (mean + 5 * stddev);
         },
         socketData = function (rows, cursor) {
             if ($cursor.text() == cursor) {
@@ -123,7 +146,9 @@ $(function(){
                             max: Number.NEGATIVE_INFINITY,
                             count: 0,
                             sum: 0,
-                            values: []
+                            sum_2: 0,
+                            values: [],
+                            limit: false
                         }
 
                         // add a new div in the markup
@@ -153,11 +178,12 @@ $(function(){
                         val = parseFloat(fields[j]);
                         sumitem = summary[j];
 
-                        if (!isNaN(val) && val < 10000) {
+                        if (!isNaN(val) && !limit(sumitem, val)) {
                             sumitem.min = val < sumitem.min ? val : sumitem.min;
                             sumitem.max = val > sumitem.max ? val : sumitem.max;
                             sumitem.count = sumitem.count + 1;
                             sumitem.sum = sumitem.sum + val;
+                            sumitem.sum_2 = sumitem.sum_2 + val * val;
                             sumitem.values.push(val);
                         }
                     }
@@ -167,7 +193,7 @@ $(function(){
             j = 1;
             for (i in summary) {
                 if (summary.hasOwnProperty(i)) {
-                    sumitem = $chart.find('div:nth-child(' + j + ')');
+                    sumitem = $chart.find('> div:nth-child(' + j + ')');
 
                     render(sumitem, summary[i]);
 
@@ -194,6 +220,8 @@ $(function(){
             $connect.attr('disabled', true);
             state.iosocket = io.connect();
         };
+
+    height = $chart.parent().height() / 6 - 20;
 
     doConnect();
 
